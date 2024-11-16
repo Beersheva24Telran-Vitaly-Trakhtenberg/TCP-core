@@ -1,6 +1,5 @@
 package telran.net;
 
-//import java.net.*;
 import java.io.*;
 
 import static telran.net.ResponseCode.*;
@@ -15,7 +14,7 @@ public class Main
             return response;
         }
     };
-    private static final int PORT = 3123;
+    private static final int PORT = 3000;
 
     public static void main(String[] args) throws Exception
     {
