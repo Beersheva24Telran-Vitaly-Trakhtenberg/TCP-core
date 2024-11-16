@@ -6,23 +6,19 @@ import static telran.net.ResponseCode.*;
 
 public class Main
 {
-    private static final Protocol PROTOCOL = new Protocol()
-    {
-        @Override
-        public Response getResponse(Request request) {
-            Response response = null;
-            if (request.requestType() != null) {
-                response = switch (request.requestType().toLowerCase()) {
-                    case "echo" -> Controller.messageEcho(request.requestData());
-                    case "length" -> Controller.calculateLength(request.requestData());
-                    case "reverse" -> Controller.messageReverse(request.requestData());
-                    default -> new Response(WRONG_REQUEST, String.format("Wrong request type: %s", request.requestType()));
-                };
-            } else {
-                response = new Response(WRONG_DATA, "Wrong request data, null given");
-            }
-            return response;
+    private static final Protocol PROTOCOL = request -> {
+        Response response;
+        if (request.requestType() != null) {
+            response = switch (request.requestType().toLowerCase()) {
+                case "echo" -> Controller.messageEcho(request.requestData());
+                case "length" -> Controller.calculateLength(request.requestData());
+                case "reverse" -> Controller.messageReverse(request.requestData());
+                default -> new Response(WRONG_REQUEST, String.format("Wrong request type: %s", request.requestType()));
+            };
+        } else {
+            response = new Response(WRONG_DATA, "Wrong request data, null given");
         }
+        return response;
     };
     private static final int PORT = 3000;
 
@@ -36,11 +32,11 @@ public class Main
         }
     }
 
-    private static void runSession(TCPClientServiceSession session) throws IOException
+    private static void runSession(TCPClientServiceSession session)
     {
         try (BufferedReader in = new BufferedReader(session.getInputStream());
         PrintStream out = new PrintStream(session.getOutputStream())) {
-            String line = "";
+            String line;
             while((line = in.readLine()) != null) {
                 String[] tmp_arr = line.split("#");
                 if (tmp_arr.length > 1) {
