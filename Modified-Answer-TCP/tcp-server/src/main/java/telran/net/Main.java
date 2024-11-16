@@ -27,8 +27,12 @@ public class Main
         TCPServer server = new TCPServer(PROTOCOL, PORT);
         server.run();
         while(true) {
-            TCPClientServiceSession session = server.accept();
-            runSession(session);
+            try {
+                TCPClientServiceSession session = server.accept();
+                runSession(session);
+            } catch (IOException e) {
+                System.out.println("Client closed connection abnormally");
+            }
         }
     }
 
