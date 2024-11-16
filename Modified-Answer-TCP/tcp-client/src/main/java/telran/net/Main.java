@@ -22,7 +22,7 @@ public class Main
                     }),
                     Item.of("Exit", io -> {
                         try {
-                            exit(io);
+                            exit();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -35,7 +35,7 @@ public class Main
         }
     }
 
-    private static void exit(InputOutput io) throws IOException
+    private static void exit() throws IOException
     {
         if (client != null) {
             client.close();
