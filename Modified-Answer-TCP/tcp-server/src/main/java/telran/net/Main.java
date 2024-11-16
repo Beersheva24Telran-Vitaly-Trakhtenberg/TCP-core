@@ -30,7 +30,7 @@ public class Main
             try {
                 TCPClientServiceSession session = server.accept();
                 runSession(session);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 System.out.println("Client closed connection abnormally");
             }
         }
