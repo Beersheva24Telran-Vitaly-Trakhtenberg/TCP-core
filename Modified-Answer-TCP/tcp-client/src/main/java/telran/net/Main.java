@@ -20,7 +20,7 @@ public class Main
                             throw new RuntimeException(e);
                         }
                     }),
-                    Item.of("Exit", io -> {
+                    Item.of("Exit", _ -> {
                         try {
                             exit();
                         } catch (IOException e) {
