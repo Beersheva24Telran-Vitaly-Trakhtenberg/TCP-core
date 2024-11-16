@@ -1,24 +1,36 @@
 package telran.net;
 
-import java.net.*;
+//import java.net.*;
 import java.io.*;
+
+import static telran.net.ResponseCode.*;
 
 public class Main
 {
-    private static final int PORT = 3000;
+    private static final Protocol PROTOCOL = new Protocol()
+    {
+        @Override
+        public Response getResponse(Request request) {
+            Response response = new Response(SUCCESS, "OK");
+            return response;
+        }
+    };
+    private static final int PORT = 3123;
 
     public static void main(String[] args) throws Exception
     {
-        ServerSocket serverSocket = new ServerSocket(PORT);
+        TCPServer server = new TCPServer(PROTOCOL, PORT);
+        server.run();
         while(true) {
-            Socket socket = serverSocket.accept();
-            runSession(socket);
+            TCPClientServiceSession session = server.accept();
+            runSession(session);
         }
     }
 
-    private static void runSession(Socket socket) throws IOException {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintStream out = new PrintStream(socket.getOutputStream())) {
+    private static void runSession(TCPClientServiceSession session) throws IOException
+    {
+        try (BufferedReader in = new BufferedReader(session.getInputStream());
+        PrintStream out = new PrintStream(session.getOutputStream())) {
             String line = "";
             while((line = in.readLine()) != null) {
                 String[] tmp_arr = line.split("#");
@@ -31,8 +43,7 @@ public class Main
                         line = "Modificator '" + tmp_arr[0] + "' Undefined!";
                     }
                 }
-                out.printf("Echo Server on %s, port %d sends back: '%s'\n", socket.getLocalAddress().getHostAddress(),
-                        socket.getLocalPort(), line);
+                out.printf("Echo Server sends back: '%s'\n", line);
                 System.out.println(line);
             }
         } catch (Exception e) {
