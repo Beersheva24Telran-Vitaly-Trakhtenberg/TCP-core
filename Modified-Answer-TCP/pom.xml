@@ -10,8 +10,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>echo-server</module>
-        <module>echo-client</module>
+        <module>tcp-server</module>
+        <module>tcp-client</module>
     </modules>
 
     <properties>
