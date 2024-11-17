@@ -28,7 +28,7 @@ public class Main
                 server.run();
             } catch (Exception e) {
                 System.out.println("Client closed connection abnormally");
-                System.err.println(e.getStackTrace());
+                System.err.println(String.format("%s \n %s", e.getMessage(), e.getStackTrace().toString()));
             }
         }
     }
