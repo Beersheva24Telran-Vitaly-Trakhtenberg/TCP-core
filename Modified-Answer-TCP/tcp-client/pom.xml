@@ -18,6 +18,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-
+        <dependency>
+            <groupId>telran.javalearning</groupId>
+            <artifactId>cli-view</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
