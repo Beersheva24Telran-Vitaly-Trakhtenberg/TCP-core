@@ -1,5 +1,7 @@
 package telran.net;
 
+import java.util.Arrays;
+
 import static telran.net.ResponseCode.*;
 
 public class Main
@@ -28,7 +30,7 @@ public class Main
                 server.run();
             } catch (Exception e) {
                 System.out.println("Client closed connection abnormally");
-                System.err.println(e.getMessage() + " \n " + e.getStackTrace().toString());
+                System.err.println(e.getMessage() + " \n " + Arrays.toString(e.getStackTrace()));
             }
         }
     }
