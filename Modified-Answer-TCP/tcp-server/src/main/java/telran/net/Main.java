@@ -24,13 +24,15 @@ public class Main
 
     public static void main(String[] args) throws Exception
     {
-        while(true) {
+        boolean running = true;
+        while(running) {
             try {
                 TCPServer server = new TCPServer(PROTOCOL, PORT);
                 server.run();
             } catch (Exception e) {
                 System.out.println("Client closed connection abnormally");
                 System.err.println(e.getMessage() + " \n " + Arrays.toString(e.getStackTrace()));
+                running = false;
             }
         }
     }
