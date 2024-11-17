@@ -24,14 +24,13 @@ public class Main
 
     public static void main(String[] args) throws Exception
     {
-        TCPServer server = new TCPServer(PROTOCOL, PORT);
-        server.run();
         while(true) {
             try {
-                TCPClientServiceSession session = server.accept();
-                //runSession(session);
-            } catch (IOException e) {
+                TCPServer server = new TCPServer(PROTOCOL, PORT);
+                server.run();
+            } catch (Exception e) {
                 System.out.println("Client closed connection abnormally");
+                System.err.println(e);
             }
         }
     }
