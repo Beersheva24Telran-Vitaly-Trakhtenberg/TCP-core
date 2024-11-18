@@ -10,7 +10,7 @@ public class Main
 {
     static TCPClient client = null;
     private static int port = 0;
-    private static String host = "localhost";
+    private static final String host = "localhost";
 
     public static void main(String[] args)
     {
