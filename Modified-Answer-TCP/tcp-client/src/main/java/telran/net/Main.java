@@ -43,7 +43,7 @@ public class Main
 
     private static void exit() throws IOException, ServerUnavailableException
     {
-        if (!client.equals(null)) {
+        if (client !=null) {
             try {
                 client.close();
             } catch (IOException e) {
