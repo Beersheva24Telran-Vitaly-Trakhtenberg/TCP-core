@@ -47,6 +47,9 @@ public class TCPClient implements Closeable
                 counter--;
             }
         } while (counter != 0);
+        if (this.socket == null) {
+            throw new ServerUnavailableException(host, port);
+        }
     }
 
     private void waitForInterval()
