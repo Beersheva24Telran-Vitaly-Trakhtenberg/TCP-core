@@ -1,5 +1,6 @@
 package telran.net;
 
+import telran.net.exceptions.ServerUnavailableException;
 import telran.view.InputOutput;
 import telran.view.*;
 
@@ -8,6 +9,8 @@ import java.io.IOException;
 public class Main
 {
     static TCPClient client = null;
+    private static int port = 0;
+    private static String host = "localhost";
 
     public static void main(String[] args)
     {
@@ -25,6 +28,9 @@ public class Main
                             exit();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
+                        } catch (ServerUnavailableException e) {
+                            System.out.println(e.getMessage());
+                            System.exit(0);
                         }
                     })
             };
@@ -35,10 +41,16 @@ public class Main
         }
     }
 
-    private static void exit() throws IOException
+    private static void exit() throws IOException, ServerUnavailableException
     {
-        if (client != null) {
-            client.close();
+        if (!client.equals(null)) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new ServerUnavailableException(host, port);
+            }
         }
         System.exit(0);
     }
@@ -46,11 +58,11 @@ public class Main
     private static void startSession(InputOutput io) throws IOException
     {
         //String host = io.readString("Enter host: ");
-        int port = io.readNumberRange("Enter port: ", "Wrong port!", 3000, 5000).intValue();
+        port = io.readNumberRange("Enter port: ", "Wrong port!", 3000, 5000).intValue();
         if (client != null) {
             client.close();
         }
-        client = new TCPClient("localhost", port);
+        client = new TCPClient(host, port);
         Menu menu = new Menu(
                 "Run Session",
                 Item.of("Echo: Enter string", Main::requestEcho),
