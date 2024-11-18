@@ -1,5 +1,6 @@
 package telran.net;
 
+import telran.net.exceptions.ServerCloseConnectionException;
 import telran.net.exceptions.ServerUnavailableException;
 import telran.view.InputOutput;
 import telran.view.*;
@@ -69,7 +70,7 @@ public class Main
                 Item.of("Calculate Length: Enter string", Main::requestLength),
                 Item.of("Reverse: Enter string", Main::requestReverse),
                 Item.ofExit()
-            );
+        );
         menu.perform(io);
     }
 
@@ -88,14 +89,16 @@ public class Main
         stringProcessing("echo", io);
     }
 
-    private static void stringProcessing(String request_type, InputOutput io)
-    {
+    private static void stringProcessing(String request_type, InputOutput io) {
         try {
             String message = io.readString("Enter string: ");
             String response = client.processSendAndReceive(request_type, message);
             io.writeLine(response);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (NullPointerException e) {
+            throw new ServerCloseConnectionException(host, port);
         }
+
     }
 }
