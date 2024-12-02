@@ -6,14 +6,14 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.*;
 
-public class TCPClientServiceSession implements Runnable
+public class TCPClientServerSession implements Runnable
 {
     Protocol protocol;
     Socket socket;
     PrintStream out;
     BufferedReader in;
 
-    public TCPClientServiceSession(Protocol protocol, Socket socket)
+    public TCPClientServerSession(Protocol protocol, Socket socket)
     {
         this.protocol = protocol;
         this.socket = socket;

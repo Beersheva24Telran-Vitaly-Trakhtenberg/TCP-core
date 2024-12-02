@@ -34,9 +34,9 @@ public class TCPServer implements Runnable
         }
     }
 
-    public TCPClientServiceSession accept() throws IOException
+    public TCPClientServerSession accept() throws IOException
     {
         Socket socket = server_socket.accept();
-        return new TCPClientServiceSession(protocol, socket);
+        return new TCPClientServerSession(protocol, socket);
     }
 }

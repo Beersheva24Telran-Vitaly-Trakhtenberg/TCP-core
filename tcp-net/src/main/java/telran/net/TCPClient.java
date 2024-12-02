@@ -9,7 +9,7 @@ import java.time.Instant;
 
 import static telran.net.TCPConfigProperties.*;
 
-public class TCPClient implements Closeable
+public class TCPClient implements Closeable, NetworkClient
 {
     private Socket socket;
     private PrintStream writer;
@@ -41,13 +41,14 @@ public class TCPClient implements Closeable
                 socket = new Socket(host, port);
                 writer = new PrintStream(socket.getOutputStream());
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                counter = 0;
+                break;
             } catch (IOException e) {
                 waitForInterval();
                 counter--;
             }
         } while (counter != 0);
         if (this.socket == null) {
+            //connect();
             throw new ServerUnavailableException(host, port);
         }
     }
@@ -60,30 +61,32 @@ public class TCPClient implements Closeable
 
     @Override
     public void close() throws IOException {
-        socket.close();
+        if(socket != null) {
+            socket.close();
+        }
     }
 
-    public String processSendAndReceive(String requestType, String requestData) throws IOException
+    @Override
+    public String sendAndReceive(String requestType, String requestData) throws IOException
     {
         Request request = new Request(requestType, requestData);
-        writer.println(request);
+
         try {
-            if (socket.isClosed()) {
-                throw new ServerCloseConnectionException(host, port);
-            }
-            if (socket == null) {
+            if(socket == null) {
                 throw new ServerUnavailableException(host, port);
             }
+            writer.println(request);
             String responseJSON = reader.readLine();
             JSONObject jsonObj = new JSONObject(responseJSON);
             ResponseCode responseCode = jsonObj.getEnum(ResponseCode.class, RESPONSE_CODE_FIELD);
             String responseData = jsonObj.getString(RESPONSE_DATA_FIELD);
-            if (responseCode == ResponseCode.SUCCESS) {
+            if(responseCode != ResponseCode.SUCCESS) {
                 throw new RuntimeException(responseData);
             }
             return responseData;
         } catch (IOException e) {
-            throw new RuntimeException("Server is unavailable");
+            connect();
+            throw new ServerUnavailableException(host, port);
         }
     }
 }
