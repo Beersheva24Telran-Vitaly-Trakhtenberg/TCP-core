@@ -86,7 +86,7 @@ public class Main
 
     private static void requestEcho(InputOutput io)
     {
-        stringProcessing("echo", io);
+        stringProcessing("hireEmployee", io);
     }
 
     private static void stringProcessing(String request_type, InputOutput io) {
