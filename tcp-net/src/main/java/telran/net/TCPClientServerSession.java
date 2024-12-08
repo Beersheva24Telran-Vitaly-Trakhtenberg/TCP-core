@@ -18,15 +18,17 @@ public class TCPClientServerSession implements Runnable
         this.protocol = protocol;
         this.socket = socket;
     }
+
     /**
      * Runs this operation.
      */
     @Override
     public void run()
     {
+        //TODO add SocketTimeoutException handler for both graceful shutdown and DoS attacks prevention
         try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintStream(socket.getOutputStream());
+            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.out = new PrintStream(socket.getOutputStream());
             String request = null;
             while ((request = in.readLine()) != null) {
                 String response = protocol.getResponseWithJSON(request);

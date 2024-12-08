@@ -6,9 +6,9 @@ import java.net.Socket;
 
 public class TCPServer implements Runnable
 {
-    Protocol protocol;
-    int port;
-    ServerSocket server_socket;
+    private Protocol protocol;
+    private int port;
+//    ServerSocket server_socket;
 
     public TCPServer(Protocol protocol, int port)
     {
@@ -20,23 +20,25 @@ public class TCPServer implements Runnable
      * Runs this operation.
      */
     @Override
-    public void run()
-    {
-        try {
-            server_socket = new ServerSocket(port);
-            System.out.println("Server started on port " + port);
-            while (true) {
-                this.accept().run();
+    public void run() {
+        //TODO add SocketTimeOut handling for shutdown
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server is listening on the port "+ port);
+            while(true) {
+                Socket socket = serverSocket.accept();
+                var session = new TCPClientServerSession(protocol, socket);
+                Thread thread = new Thread(session);
+
+                thread.start();
             }
         } catch (Exception e) {
-            System.out.println("Error on the server: " + e.getMessage());
-            System.err.println(e);
+            System.out.println(e);
         }
     }
 
-    public TCPClientServerSession accept() throws IOException
-    {
-        Socket socket = server_socket.accept();
-        return new TCPClientServerSession(protocol, socket);
+    public void shutdown() {
+        //TODO
+        //In the ExecutorService framework to provide shutdownNow (to ignore all not processing client sessions)
     }
+
 }
