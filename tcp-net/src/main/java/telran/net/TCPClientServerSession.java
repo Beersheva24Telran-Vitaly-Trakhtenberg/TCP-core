@@ -8,8 +8,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-
 public class TCPClientServerSession implements Runnable
 {
     Protocol protocol;
@@ -45,7 +43,7 @@ public class TCPClientServerSession implements Runnable
             closeSocket();
         } catch (IOException e) {
             System.out.println("Error processing request: " + e.getMessage());
-            err.println(e);
+            System.err.println(e);
         } finally {
             closeSocket();
         }
