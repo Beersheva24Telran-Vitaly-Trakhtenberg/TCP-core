@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 
@@ -14,10 +15,11 @@ public class TCPClientServerSession implements Runnable
     Socket socket;
     private static final RateLimiter rate_limiter = new RateLimiter(100, 1, TimeUnit.SECONDS);
 
-    public TCPClientServerSession(Protocol protocol, Socket socket)
+    public TCPClientServerSession(Protocol protocol, Socket socket) throws SocketException
     {
         this.protocol = protocol;
         this.socket = socket;
+        this.socket.setSoTimeout(TCPServerSettings.getSocketTimeout());
     }
 
     /**
@@ -90,6 +92,14 @@ public class TCPClientServerSession implements Runnable
             }
             return res;
         }
+    }
+
+    public boolean shutdown() throws IOException
+    {
+        System.out.println("Socket Shutdown initiated...");
+        this.socket.close();
+        boolean res = true;
+        return res;
     }
 }
 

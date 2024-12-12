@@ -4,7 +4,7 @@ public class TCPServerSettings
 {
     private static int MAX_CONNECTIONS_NUMBER = 10;
     private static int IDLE_CONNECTON_MS_TIMEOUT = 30000;
-    private static int DEFAULT_SOCKET_TIMEOUT = 10;
+    private static int DEFAULT_SOCKET_TIMEOUT = 30000;
     private static int DEFAULT_IDLE_CONNECTION_TIMEOUT = 60000;
     private static int DEFAULT_LIMIT_REQUESTS_PER_SEC = 5;
     private static int DEFAULT_LIMIT_NON_OK_RESPONSES_IN_ROW = 10;

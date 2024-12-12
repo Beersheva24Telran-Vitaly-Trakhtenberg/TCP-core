@@ -1,13 +1,13 @@
 package telran.net;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ApplicationServerTest
 {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws IOException {
         Protocol protocol = req -> {
             return switch(req.requestType()) {
                 case "ok" -> new Response(ResponseCode.SUCCESS, "");
