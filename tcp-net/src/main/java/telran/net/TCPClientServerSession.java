@@ -55,7 +55,7 @@ public class TCPClientServerSession implements Runnable
                     }
                 } catch (SocketTimeoutException e) {
                     System.out.println("Session timed out due to inactivity: " + e.getMessage());
-                    shutdown();
+                    shutdownNow();
                     break;
                 }
             }
@@ -87,11 +87,23 @@ public class TCPClientServerSession implements Runnable
         lock.lock();
         try {
             running = false;
-            closeSocket();
         } finally {
             lock.unlock();
         }
         System.out.println("Session shutdown completed...");
+    }
+
+    public void shutdownNow() throws IOException
+    {
+        System.out.println("Session shutdownNow initiated...");
+        lock.lock();
+        try {
+            running = false;
+            closeSocket();
+        } finally {
+            lock.unlock();
+        }
+        System.out.println("Session shutdownNow completed...");
     }
 
     public boolean isFinished()
