@@ -98,7 +98,7 @@ public class TCPServer implements Runnable
         }
     }
 
-    public boolean shutdown() throws IOException, InterruptedException
+    public boolean shutdown() throws IOException
     {
         System.out.println("Server shutdown initiated...");
         boolean res = true;
