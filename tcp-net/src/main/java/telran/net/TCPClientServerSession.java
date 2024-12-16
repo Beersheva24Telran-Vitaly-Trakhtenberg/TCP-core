@@ -8,12 +8,16 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TCPClientServerSession implements Runnable
 {
-    Protocol protocol;
-    Socket socket;
+    private final Protocol protocol;
+    private final Socket socket;
     private static final RateLimiter rate_limiter = new RateLimiter(100, 1, TimeUnit.SECONDS);
+    private volatile boolean running = true;
+    private volatile boolean finished = false;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public TCPClientServerSession(Protocol protocol, Socket socket) throws SocketException
     {
@@ -30,24 +34,37 @@ public class TCPClientServerSession implements Runnable
     {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintStream out = new PrintStream(socket.getOutputStream())) {
+
             String request;
-            while ((request = in.readLine()) != null) {
-                if (rate_limiter.allowRequest()) {
-                    String response = protocol.getResponseWithJSON(request);
-                    out.println(response);
-                } else {
-                    System.out.println("Rate limit exceeded");
-                    out.println("Rate limit exceeded");
+            while(running) {
+                try {
+                    if (socket.isClosed()) {
+                        break;
+                    }
+
+                    if ((request = in.readLine()) != null) {
+                        if (rate_limiter.allowRequest()) {
+                            String response = protocol.getResponseWithJSON(request);
+                            out.println(response);
+                        } else {
+                            System.out.println("Rate limit exceeded");
+                            out.println("Rate limit exceeded");
+                        }
+                    } else {
+                        break;
+                    }
+                } catch (SocketTimeoutException e) {
+                    System.out.println("Session timed out due to inactivity: " + e.getMessage());
+                    shutdown();
+                    break;
                 }
             }
-        } catch (SocketTimeoutException e) {
-            System.out.println("Socket timed out due to inactivity: " + e.getMessage());
-            closeSocket();
         } catch (IOException e) {
             System.out.println("Error processing request: " + e.getMessage());
             System.err.println(e);
+            e.printStackTrace();
         } finally {
-            closeSocket();
+            finished = true;
         }
     }
 
@@ -55,12 +72,31 @@ public class TCPClientServerSession implements Runnable
         try {
             if (!socket.isClosed()) {
                 socket.close();
-                System.out.println("Socket closed successfully.");
+                finished = true;
+                System.out.println("Session closed successfully.");
             }
         } catch (IOException e) {
-            System.out.println("Error closing socket: " + e.getMessage());
+            System.out.println("Error closing session: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void shutdown() throws IOException
+    {
+        System.out.println("Session shutdown initiated...");
+        lock.lock();
+        try {
+            running = false;
+            closeSocket();
+        } finally {
+            lock.unlock();
+        }
+        System.out.println("Session shutdown completed...");
+    }
+
+    public boolean isFinished()
+    {
+        return finished;
     }
 
     private static class RateLimiter
@@ -92,14 +128,6 @@ public class TCPClientServerSession implements Runnable
             }
             return res;
         }
-    }
-
-    public boolean shutdown() throws IOException
-    {
-        System.out.println("Socket Shutdown initiated...");
-        this.socket.close();
-        boolean res = true;
-        return res;
     }
 }
 

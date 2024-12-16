@@ -4,13 +4,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
-import java.util.concurrent.*;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TCPServer implements Runnable
 {
     private final Protocol protocol;
     private final int port;
-    private final ExecutorService executorService;
+    private final ExecutorService executor_service;
     private final List<TCPClientServerSession> sessions;
     private volatile boolean running = true;
     private ServerSocket server_socket;
@@ -32,7 +36,7 @@ public class TCPServer implements Runnable
         TCPServerSettings.setLimitRequestsPerSecond(limitRequestsPerSecond);
         TCPServerSettings.setLimitNonOkResponsesInRow(limitNonOkResponsesInRow);
 
-        this.executorService = Executors.newFixedThreadPool(TCPServerSettings.getMaxConnectionsNumber());
+        this.executor_service = Executors.newFixedThreadPool(TCPServerSettings.getMaxConnectionsNumber());
     }
 
     public TCPServer(Protocol protocol, int port, int idleConnectionTimeout)
@@ -65,18 +69,20 @@ public class TCPServer implements Runnable
             server_socket = new ServerSocket(port);
             server_socket.setSoTimeout(TCPServerSettings.getSocketTimeout());
             System.out.println("Server is listening on the port "+ port);
-            while(running) {    // !executorService.isShutdown()
+            while(running) {
                 try {
                     Socket socket = server_socket.accept();
                     socket.setSoTimeout(TCPServerSettings.getIdleConnectionMsTimeout());
                     TCPClientServerSession session = new TCPClientServerSession(protocol, socket);
                     sessions.add(session);
-                    executorService.submit(session);
+                    executor_service.submit(session);
                 } catch (IOException e) {
                     if (!running) {
                         break;
                     }
-                    System.out.println(e);
+                    if (!(e instanceof java.net.SocketTimeoutException)) {
+                        System.out.println(e);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -92,11 +98,12 @@ public class TCPServer implements Runnable
         }
     }
 
-    public boolean shutdown() throws IOException
+    public boolean shutdown() throws IOException, InterruptedException
     {
         System.out.println("Server shutdown initiated...");
         boolean res = true;
         running = false;
+
         if (server_socket != null && !server_socket.isClosed()) {
             try {
                 server_socket.close();
@@ -105,22 +112,30 @@ public class TCPServer implements Runnable
                 res = false;
             }
         }
-        executorService.shutdown();
-        for (TCPClientServerSession session : sessions) {
-            session.shutdown();
-        }
+
+        executor_service.shutdown();
+
         try {
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                executorService.shutdownNow();
-                res = false;
+            if (!executor_service.awaitTermination((long) (TCPServerSettings.getIdleConnectionTimeout() * 1.05), TimeUnit.MILLISECONDS)) {
+                executor_service.shutdownNow();
+            }
+
+            for (TCPClientServerSession session : sessions) {
+                while (!session.isFinished()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
+                }
             }
         } catch (InterruptedException e) {
-            executorService.shutdownNow();
+            executor_service.shutdownNow();
             res = false;
         }
-        System.out.println("Shutdown complete.");
+        System.out.println("Server shutdown complete.");
 
         return res;
     }
-
 }

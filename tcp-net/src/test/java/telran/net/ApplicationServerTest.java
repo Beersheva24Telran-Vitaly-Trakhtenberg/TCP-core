@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ApplicationServerTest
 {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Protocol protocol = req -> {
             return switch(req.requestType()) {
                 case "ok" -> new Response(ResponseCode.SUCCESS, "");
